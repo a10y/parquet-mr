@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.parquet.Log;
 import org.apache.parquet.filter2.compat.FilterCompat.Filter;
 import org.apache.parquet.filter2.compat.FilterCompat.NoOpFilter;
 import org.apache.parquet.filter2.compat.FilterCompat.Visitor;
@@ -41,6 +42,8 @@ import static org.apache.parquet.Preconditions.checkNotNull;
  * no filtering will be performed.
  */
 public class RowGroupFilter implements Visitor<List<BlockMetaData>> {
+  private static final Log LOG = Log.getLog(RowGroupFilter.class);
+
   private final List<BlockMetaData> blocks;
   private final MessageType schema;
   private final List<FilterLevel> levels;
@@ -94,6 +97,7 @@ public class RowGroupFilter implements Visitor<List<BlockMetaData>> {
 
       if(!drop && levels.contains(FilterLevel.DICTIONARY)) {
         drop = DictionaryFilter.canDrop(filterPredicate, block.getColumns(), reader.getDictionaryReader(block));
+        LOG.info("DICTIONARY filtering: can drop? " + drop);
       }
 
       if(!drop) {
